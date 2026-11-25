@@ -14,10 +14,20 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 const ENTRY = "The build went green at 3 a.m., and he sat there, afraid to touch anything.";
 
-const chars = [...ENTRY].length;
-if (chars < 1 || chars > 240) throw new Error(`entry must be 1-240 characters, got ${chars}`);
-if (ENTRY.trim().length === 0) throw new Error("entry must not be only whitespace");
-if (ENTRY.includes("\n")) throw new Error("entry must be a single line");
+// Revision 2: the gate is now a validateEntry() function. A line of only
+// whitespace carries no pride at all, so it is refused outright — the
+// entry must hold real content (trim().length > 0) — and it must not be
+// padded with leading or trailing whitespace either.
+function validateEntry(entry: string): number {
+  if (entry.trim().length === 0) throw new Error("entry must not be only whitespace");
+  if (entry !== entry.trim()) throw new Error("entry must not have leading or trailing whitespace");
+  if (entry.includes("\n")) throw new Error("entry must be a single line");
+  const chars = [...entry].length;
+  if (chars < 1 || chars > 240) throw new Error(`entry must be 1-240 characters, got ${chars}`);
+  return chars;
+}
+
+const chars = validateEntry(ENTRY);
 
 mkdirSync("/output", { recursive: true });
 writeFileSync("/output/entry.txt", ENTRY, "utf8");
